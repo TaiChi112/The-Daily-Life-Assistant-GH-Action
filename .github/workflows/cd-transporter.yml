@@ -1,0 +1,35 @@
+name: 4. The Transporter (CD)
+
+# ทำงานเฉพาะตอน Push เข้า branch 'main' เท่านั้น
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      # 1. Login เข้า Docker Hub (ต้องใช้กุญแจ)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      # 2. ติดตั้งตัว Build (buildx) เพื่อให้ Docker ฉลาดขึ้น
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      # 3. สร้าง Image และดันขึ้น Docker Hub
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          # ชื่อ Image: ชื่อUser/ชื่อRepo:tag
+          # ตรงนี้จะดึงชื่อ User มาจาก Secret ให้อัตโนมัติ
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/the-daily-life-assistant:latest
